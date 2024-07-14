@@ -1,0 +1,67 @@
+def csv_to_dict(filename: str) -> list:
+    result = []
+    with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            result.append(row)
+    return result
+
+
+def dict_to_csv(data: list, filename: str) -> None:
+    keys = data[0].keys()
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=keys)
+        writer.writeheader()
+        writer.writerows(data)
+
+
+filename = 'inter.csv'
+inter_data = csv_to_dict(filename)
+filename = 'orderdata.csv'
+orderdata = csv_to_dict(filename)
+filename = 'userdata.csv'
+userdata = csv_to_dict(filename)
+
+correct_userids = set()
+for i in range(len(userdata)):
+
+    if int(userdata[i]['age']) in range(16):
+
+        if userdata[i]['education'] != '':
+            continue
+        if (userdata[i]['marital'] not in ['single', 'dating']) or int(userdata[i]['kids']) or int(
+                userdata[i]['teenagers']):
+            continue
+
+    elif int(userdata[i]['age'] in range(18, 30)):
+
+        if int(userdata[i]['age'] in range(20)) and userdata[i]['education'] in ['bachelor', 'phd', 'masters']:
+            continue
+
+        if bool(userdata[i]['teenagers']):
+            continue
+
+    correct_userids.add(userdata[i]['userid'])
+
+
+new_inter_data_dict = list()
+for i in range(len(inter_data)):
+    if inter_data[i]['UserId'] in correct_userids:
+        new_inter_data_dict.append(inter_data[i])
+
+dict_to_csv(new_inter_data_dict,'correct_interdata.csv')
+
+new_orderdata_dict = list()
+for i in range(len(orderdata)):
+    if orderdata[i]['userId'] in correct_userids or (orderdata[i]['avg_bill']=='') or float(orderdata[i]['avg_bill'])<0:
+        new_orderdata_dict.append(orderdata[i])
+
+dict_to_csv(new_orderdata_dict, 'correct_orderdata.csv')
+
+
+new_userdata_dict = list()
+for i in range(len(userdata)):
+    if userdata[i]['userid'] in correct_userids:
+        new_userdata_dict.append(userdata[i])
+
+dict_to_csv(new_userdata_dict, 'correct_userdata.csv')
